@@ -17,6 +17,7 @@ service/nginx exposed
 ```sh
 % kubectl create deploy mattermost --image k8spracticalguide/mattermost:4.10.2 -o yaml --dry-run=client > mattermost-deploy.yaml
 % kubectl create deploy db --image k8spracticalguide/mysql:5.7.22 -o yaml --dry-run=client > db-deploy.yaml
+% kubectl create cm common-env -o yaml --dry-run=client --from-literal MYSQL_USER=myuser --from-literal MYSQL_PASSWORD=mypassword --from-literal MYSQL_DATABASE=mattermost > cm.yaml
 ```
 
 ## kubectl apply -f
