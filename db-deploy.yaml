@@ -22,8 +22,8 @@ spec:
         name: mysql
         envFrom:
         - configMapRef:
-          name: common-env
+            name: common-env
         - secretRef:
-          name: common-env
+            name: common-env
         resources: {}
 status: {}
