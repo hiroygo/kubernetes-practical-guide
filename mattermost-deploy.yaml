@@ -20,5 +20,14 @@ spec:
       containers:
       - image: k8spracticalguide/mattermost:4.10.2
         name: mattermost
+        env:
+        - name: MM_USERNAME
+          value: myuser
+        - name: MM_PASSWORD
+          value: mypassword
+        - name: DB_NAME
+          value: mattermost
+        - name: DB_HOST
+          value: ""
         resources: {}
 status: {}
