@@ -15,8 +15,8 @@ service/nginx exposed
 
 ## マニフェストの雛形作成
 ```sh
-% kubectl create deploy nginx --image k8spracticalguide/mattermost:4.10.2 -o yaml --dry-run=client > mattermost-deploy.yaml
-% kubectl create deploy nginx --image k8spracticalguide/mysql:5.7.22 -o yaml --dry-run=client > db-deploy.yaml
+% kubectl create deploy mattermost --image k8spracticalguide/mattermost:4.10.2 -o yaml --dry-run=client > mattermost-deploy.yaml
+% kubectl create deploy db --image k8spracticalguide/mysql:5.7.22 -o yaml --dry-run=client > db-deploy.yaml
 ```
 
 ## kubectl apply -f

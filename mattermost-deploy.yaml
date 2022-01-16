@@ -3,19 +3,19 @@ kind: Deployment
 metadata:
   creationTimestamp: null
   labels:
-    app: nginx
-  name: nginx
+    app: mattermost
+  name: mattermost
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: nginx
+      app: mattermost
   strategy: {}
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: nginx
+        app: mattermost
     spec:
       containers:
       - image: k8spracticalguide/mattermost:4.10.2
