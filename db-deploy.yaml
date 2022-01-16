@@ -23,11 +23,8 @@ spec:
         env:
         - name: MYSQL_ROOT_PASSWORD
           value: rootpassword
-        - name: MYSQL_USER
-          value: myuser
-        - name: MYSQL_PASSWORD
-          value: mypassword
-        - name: MYSQL_DATABASE
-          value: mattermost
+        envFrom:
+        - configMapRef:
+            name: common-env
         resources: {}
 status: {}

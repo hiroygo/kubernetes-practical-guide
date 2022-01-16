@@ -22,12 +22,31 @@ spec:
         name: mattermost
         env:
         - name: MM_USERNAME
-          value: myuser
+          valueFrom:
+            configMapKeyRef:
+              name: common-env
+              key: MYSQL_USER
         - name: MM_PASSWORD
-          value: mypassword
+          valueFrom:
+            configMapKeyRef:
+              name: common-env
+              key: MYSQL_PASSWORD
         - name: DB_NAME
-          value: mattermost
+          valueFrom:
+            configMapKeyRef:
+              name: common-env
+              key: MYSQL_DATABASE
         - name: DB_HOST
           value: ""
         resources: {}
+        volumeMounts:
+        - name: cm-volume
+          mountPath: /mm/config
+      volumes:
+      - name: cm-volume
+        configMap:
+          name: mm-config-file
+          items:
+          - key: config.json
+            path: config.json
 status: {}
