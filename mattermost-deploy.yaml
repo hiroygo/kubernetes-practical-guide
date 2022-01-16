@@ -37,7 +37,7 @@ spec:
               name: common-env
               key: MYSQL_DATABASE
         - name: DB_HOST
-          value: ""
+          value: mattermost-db
         resources: {}
         volumeMounts:
         - name: cm-volume
