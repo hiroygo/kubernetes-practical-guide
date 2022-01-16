@@ -20,11 +20,10 @@ spec:
       containers:
       - image: k8spracticalguide/mysql:5.7.22
         name: mysql
-        env:
-        - name: MYSQL_ROOT_PASSWORD
-          value: rootpassword
         envFrom:
         - configMapRef:
-            name: common-env
+          name: common-env
+        - secretRef:
+          name: common-env
         resources: {}
 status: {}
