@@ -1,6 +1,12 @@
 # kubernetes-practical-guide
 * https://github.com/kubernetes-practical-guide/examples
 
+## kubectl get
+* `-l` でラベル指定できる
+```sh
+$ kubectl get po -l app=db
+```
+
 ## kubectl create
 ```sh
 % kubectl create deployment nginx --image nginx
@@ -13,7 +19,7 @@ service/nginx exposed
 % minikube service nginx
 ```
 
-## マニフェストの雛形作成
+## --dry-run(マニフェストの雛形作成)
 * deployment, confingmap, secret
 ```sh
 % kubectl create deploy mattermost --image k8spracticalguide/mattermost:4.10.2 -o yaml --dry-run=client > mattermost-deploy.yaml
@@ -24,11 +30,11 @@ service/nginx exposed
 
 * service
 ```sh
-# クラスタ内のサービスの名前解決用
+# clusterip はクラスタ内のサービスの名前解決用
 # ちなみに spec.clusterIP を None にすると ClusterIP が付与されず pod の IP が直接返る(Headless Service)
 % kubectl create svc clusterip mattermost-db --tcp 3306 -o yaml --dry-run=client > db-service.yaml
 
-# クラスタ外のサービスの名前解決用
+# externalname はクラスタ外のサービスの名前解決用
 % kubectl create svc externalname ext-mattermost-db --external-name www.google.com
 # ExternalName の CLUSTER-IP は付与されない
 % kubectl get svc
@@ -38,13 +44,7 @@ kubernetes          ClusterIP      10.96.0.1    <none>           443/TCP    30d
 mattermost-db       ClusterIP      10.98.57.1   <none>           3306/TCP   25m
 ```
 
-## kubectl get
-* `-l` でラベル指定できる
-```sh
-$ kubectl get po -l app=db
-```
-
-## ワンショットな pod 起動
+## kubectl run(ワンショットな pod 起動)
 ```sh
 % kubectl run pingtest -i --rm --image k8spracticalguide/busybox:1.28 --restart=Never -- ping -c 1 172.17.0.6
 PING 172.17.0.6 (172.17.0.6): 56 data bytes
@@ -64,10 +64,18 @@ pod "pingtest" deleted
 ## アプリケーションを外部に公開する
 * NodePort を使う場合
 ```sh
+# expose だと mattermost という deployment が実際に存在しないとエラーになる
 % kubectl expose --type NodePort --port 8065 deploy mattermost
 % kubectl get svc mattermost -o wide
 NAME         TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)          AGE   SELECTOR
 mattermost   NodePort   10.102.79.83   <none>        8065:32427/TCP   74s   app=mattermost
+# CLUSTER-IP が使われているので、クラスタ内から名前解決できる
+% kubectl run nsloolup -i --rm --image busybox --restart=Never -- nslookup mattermost
+Server:         10.96.0.10
+Address:        10.96.0.10:53
+
+Name:   mattermost.default.svc.cluster.local
+Address: 10.102.79.83
 % minikube ip
 192.168.49.2
 # https://minikube.sigs.k8s.io/docs/handbook/host-access/
@@ -76,4 +84,6 @@ docker@minikube:~$ curl 192.168.49.2:32427 > /dev/null
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100  3261  100  3261    0     0  3184k      0 --:--:-- --:--:-- --:--:-- 3184k
+# create だと mattermost という deployment が実際に存在しなくても OK
+% kubectl create service nodeport test --tcp 8080 --node-port 12345 --dry-run=client
 ```
