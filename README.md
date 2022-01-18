@@ -60,7 +60,7 @@ kubernetes          ClusterIP      10.96.0.1    <none>           443/TCP    30d
 mattermost-db       ClusterIP      10.98.57.1   <none>           3306/TCP   25m
 ```
 
-### nodeport, ingress(アプリケーションを外部に公開する)
+### nodeport, ingress, loadbalancer(アプリケーションを外部に公開する)
 * nodeport は CLUSTER-IP が使われているので、クラスタ内から名前解決できる
 ```sh
 # expose だと mattermost という deployment が実際に存在しないとエラーになる
@@ -88,6 +88,35 @@ docker@minikube:~$ curl 192.168.49.2:32427 > /dev/null
 
 * ingress
 ```sh
-% kubectl create ingress mattermost --rule=chat.$(minikube ip).nip.io/=mattermost:8065 --dry-run=client -o=yaml
+% kubectl create ingress mattermost --rule=chat.foo.nip.io/=mattermost:8065 --dry-run=client -o=yaml
+% minikube ssh
+docker@minikube:~$ curl --resolve chat.foo.nip.io:80:127.0.0.1 chat.foo.nip.io > /dev/null
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  3261  100  3261    0     0  1592k      0 --:--:-- --:--:-- --:--:-- 1592k
+```
+
+* loadbalancer
+```sh
+% kubectl expose deployment mattermost --port 8065 --type=LoadBalancer --name=lb
+% kubectl get svc
+NAME            TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+kubernetes      ClusterIP      10.96.0.1        <none>        443/TCP          32d
+lb              LoadBalancer   10.106.202.206   <pending>     8065:31786/TCP   10s
+mattermost      NodePort       10.102.79.83     <none>        8065:32427/TCP   2d1h
+mattermost-db   ClusterIP      10.98.57.1       <none>        3306/TCP         2d2h
+# 以下は別のターミナルで実行する
+ % minikube tunnel
+🏃  Starting tunnel for service lb.
+% kubectl get svc
+NAME            TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+kubernetes      ClusterIP      10.96.0.1        <none>        443/TCP          32d
+lb              LoadBalancer   10.106.202.206   127.0.0.1     8065:31786/TCP   2m14s
+mattermost      NodePort       10.102.79.83     <none>        8065:32427/TCP   2d1h
+mattermost-db   ClusterIP      10.98.57.1       <none>        3306/TCP         2d2h
+% curl 127.0.0.1:8065 > /dev/null
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  3261  100  3261    0     0   297k      0 --:--:-- --:--:-- --:--:-- 1061k
 ```
 
