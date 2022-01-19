@@ -68,7 +68,7 @@ mattermost-db       ClusterIP      10.98.57.1   <none>           3306/TCP   25m
 % kubectl get svc mattermost -o wide
 NAME         TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)          AGE   SELECTOR
 mattermost   NodePort   10.102.79.83   <none>        8065:32427/TCP   74s   app=mattermost
-% kubectl run nsloolup -i --rm --image busybox --restart=Never -- nslookup mattermost
+% kubectl run nslookup -i --rm --image busybox --restart=Never -- nslookup mattermost
 Server:         10.96.0.10
 Address:        10.96.0.10:53
 
@@ -118,5 +118,34 @@ mattermost-db   ClusterIP      10.98.57.1       <none>        3306/TCP         2
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100  3261  100  3261    0     0   297k      0 --:--:-- --:--:-- --:--:-- 1061k
+```
+
+* loadbalancer の挙動
+```sh
+# 別のターミナルで minikube tunnel している
+% kubectl get svc lb
+NAME   TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+lb     LoadBalancer   10.106.202.206   127.0.0.1     8065:31786/TCP   17h
+# クラスタ内から CLUSTER-IP へはアクセスできる
+% kubectl run wgettest -i --rm --image k8spracticalguide/busybox:1.28 --restart=Never -- wget 10.106.202.206:8065
+Connecting to 10.106.202.206:8065 (10.106.202.206:8065)
+index.html           100% |*******************************|  3261   0:00:00 ETA
+# loadbalancer は NodePort を使ってノードのポートを解放しているので minikube からアクセスできる
+docker@minikube:~$ curl localhost:31786 > /dev/null
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  3261  100  3261    0     0  1592k      0 --:--:-- --:--:-- --:--:-- 3184k
+# 自分のマシンからアクセスしてみる
+# minikube の LoadBalancer(localhost:8065) > NodePort(192.168.49.2:31786) > ClusterIP(10.106.202.206:8065) > Pod(172.17.0.6:8065) の順で通る
+% minikube ip
+192.168.49.2
+% kubectl get po -o=wide
+NAME                          READY   STATUS    RESTARTS   AGE     IP           NODE       NOMINATED NODE   READINESS GATES
+db-799494d969-4vwwl           1/1     Running   0          2d20h   172.17.0.6   minikube   <none>           <none>
+mattermost-6d77868f4c-hqr8n   1/1     Running   0          2d19h   172.17.0.7   minikube   <none>           <none>
+% curl localhost:8065 > /dev/null
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  3261  100  3261    0     0   269k      0 --:--:-- --:--:-- --:--:--  796k
 ```
 
